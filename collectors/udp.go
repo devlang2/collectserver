@@ -5,6 +5,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/devlang2/collectserver/event"
 	"github.com/nanobox-io/golang-syslogparser/rfc5424"
 )
@@ -34,6 +35,7 @@ func (s *UDPCollector) Start(c chan<- *event.Event) error {
 			}
 
 			p := rfc5424.NewParser(buf[:n])
+			spew.Println(string(buf[:n]))
 			err = p.Parse()
 			if err != nil {
 				log.Printf("Parse error: " + err.Error())
