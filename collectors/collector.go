@@ -2,7 +2,7 @@ package collectors
 
 import (
 	"crypto/tls"
-	"fmt"
+	"errors"
 	"net"
 	"strings"
 
@@ -22,8 +22,7 @@ func NewCollector(proto, addr string, tlsConfig *tls.Config) (Collector, error) 
 		if err != nil {
 			return nil, err
 		}
-
 		return &UDPCollector{addr: addr}, nil
 	}
-	return nil, fmt.Errorf("unsupport collector protocol")
+	return nil, errors.New("Unsupport collector protocol")
 }

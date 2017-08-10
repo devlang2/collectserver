@@ -1,10 +1,10 @@
 package collectors
 
 import (
-	"log"
 	"net"
 
-	"github.com/davecgh/go-spew/spew"
+	log "github.com/sirupsen/logrus"
+
 	"github.com/devlang2/collectserver/event"
 	"github.com/nanobox-io/golang-syslogparser/rfc5424"
 )
@@ -19,7 +19,6 @@ type UDPCollector struct {
 }
 
 func (s *UDPCollector) Start(c chan<- *event.Event) error {
-	spew.Dump()
 	conn, err := net.ListenUDP("udp", s.addr)
 	if err != nil {
 		return err

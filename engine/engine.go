@@ -5,13 +5,13 @@ import (
 	"expvar"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"time"
 
 	"github.com/devlang2/collectserver/event"
 	"github.com/devlang2/golibs/network"
 	_ "github.com/go-sql-driver/mysql"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -47,7 +47,10 @@ func NewBatcher(duration time.Duration, size, maxpending int, datadir string) *B
 func (this *Batcher) Start(errChan chan<- error) error {
 	// Create data directory
 	if _, err := os.Stat(this.datadir); os.IsNotExist(err) {
-		os.Mkdir(this.datadir, 0755)
+		err := os.Mkdir(this.datadir, 0755)
+		if err != nil {
+			return err
+		}
 	}
 
 	go func() {

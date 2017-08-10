@@ -10,11 +10,11 @@ import (
 	//	"log"
 	//	//	"net"
 	//	"net/http"
-	"os"
-	//	"os/signal"
-	"runtime"
-	//	"syscall"
 	"crypto/rand"
+	"os"
+	"os/signal"
+	"runtime"
+	"syscall"
 	"time"
 	//	"io"
 	"crypto/tls"
@@ -31,8 +31,8 @@ const (
 	DefaultBatchDuration   = 3000 // ms
 	DefaultBatchMaxPending = 3
 	DefaultDataDir         = "./temp"
-	DefaultTCPAddr         = "localhost:9001"
-	DefaultUDPAddr         = "localhost:9002"
+	DefaultTCPAddr         = "localhost:5514"
+	DefaultUDPAddr         = "localhost:514"
 )
 
 var (
@@ -41,6 +41,8 @@ var (
 )
 
 func init() {
+
+	// Set CPU
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	// Set logger
@@ -48,20 +50,24 @@ func init() {
 		ForceColors:   true,
 		DisableColors: true,
 	})
-	log.SetOutput(os.Stdout)
 	log.SetLevel(log.InfoLevel)
+	//	file, err := os.OpenFile("server.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	//	if err == nil {
+	//		log.SetOutput(file)
+	//	} else {
+	//		log.Error("Failed to log to file, using default stderr")
+	//		log.SetOutput(os.Stdout)
+	//	}
 }
 
 func main() {
-	log.Info("Starting server..")
-
 	// Set flags
 	fs = flag.NewFlagSet("", flag.ExitOnError)
 	var (
 		batchSize       = fs.Int("batchsize", DefaultBatchSize, "Batch size")
 		batchDuration   = fs.Int("duration", DefaultBatchDuration, "Batch timeout, in milliseconds")
 		batchMaxPending = fs.Int("maxpending", DefaultBatchMaxPending, "Maximum pending events")
-		datadir         = fs.String("datadir", DefaultUDPAddr, "Set data directory")
+		datadir         = fs.String("datadir", DefaultDataDir, "Set data directory")
 		udpAddr         = fs.String("udpaddr", DefaultUDPAddr, "Syslog server UDP bind address in the form host:port")
 		tcpAddr         = fs.String("tcpaddr", DefaultTCPAddr, "Syslog server TCP bind address in the form host:port")
 		caPemPath       = fs.String("tlspem", "", "path to CA PEM file for TLS-enabled TCP server. If not set, TLS not activated")
@@ -71,7 +77,10 @@ func main() {
 	fs.Usage = printHelp
 	fs.Parse(os.Args[1:])
 	if *isDebug {
-		//		log.SetOutput(log.DebugLevel)
+		log.SetLevel(log.DebugLevel)
+		log.Info("Starting server..[Debug mode]")
+	} else {
+		log.Info("Starting server..")
 	}
 
 	// Start engine
@@ -79,16 +88,18 @@ func main() {
 	batcher := engine.NewBatcher(duration, *batchSize, *batchMaxPending, *datadir)
 	errChan := make(chan error)
 	if err := batcher.Start(errChan); err != nil {
-		log.Fatalf("failed to start batcher: %s", err.Error())
+		log.Fatalf("Failed to start batcher: %s", err.Error())
 	}
+	log.Info("Batcher is started")
 
+	// Start log drain
 	go logDrain("error", errChan)
 
 	// Start UDP collector
 	if err := startUDPCollector(*udpAddr, batcher); err != nil {
-
-		//		log.Fatalf("failed to start UDP collector: %s", err.Error())
+		log.Fatalf("Failed to start UDP collector: %s", err.Error())
 	}
+	log.Info("UDP collector is started")
 
 	// Start TCP collector
 	var tlsConfig *tls.Config
@@ -96,20 +107,22 @@ func main() {
 	if *caPemPath != "" && *caKeyPath != "" {
 		tlsConfig, err = newTLSConfig(*caPemPath, *caKeyPath)
 		if err != nil {
-			log.Fatalf("failed to configure TLS: %s", err.Error())
+			log.Fatalf("Failed to configure TLS: %s", err.Error())
 		}
 		log.Printf("TLS successfully configured")
 	}
 
 	if err := startTCPCollector(*tcpAddr, tlsConfig, batcher); err != nil {
+		log.Fatalf("failed to start TCP collector: %s", err.Error())
 	}
+	log.Info("TCP collector is started")
 	//	log.Printf("UDP collector listening to %s", *udpIface)
 
 	//	// Start monitoring
 	//	startStatusMonitoring(monitorIface)
 
-	//	// Stop
-	//	waitForSignals()
+	// Stop
+	waitForSignals()
 }
 
 //func startStatusMonitoring(monitorIface *string) error {
@@ -142,27 +155,6 @@ func startTCPCollector(addr string, tls *tls.Config, batcher *engine.Batcher) er
 
 	return nil
 }
-
-//func startUDPCollector(iface, format string, batcher *ekanite.Batcher) error {
-//	collector, err := input.NewCollector("udp", iface, format, nil)
-//	if err != nil {
-//		return fmt.Errorf("failed to create UDP collector: %s", err.Error())
-//	}
-//	if err := collector.Start(batcher.C()); err != nil {
-//		return fmt.Errorf("failed to start UDP collector: %s", err.Error())
-//	}
-
-//	return nil
-//}
-
-//func waitForSignals() {
-//	signalCh := make(chan os.Signal, 1)
-//	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM)
-//	select {
-//	case <-signalCh:
-//		log.Println("signal received, shutting down...")
-//	}
-//}
 
 func startUDPCollector(addr string, batcher *engine.Batcher) error {
 	collector, err := collectors.NewCollector("udp", addr, nil)
@@ -218,4 +210,13 @@ func newTLSConfig(caPemPath, caKeyPath string) (*tls.Config, error) {
 	config.Rand = rand.Reader
 
 	return config, nil
+}
+
+func waitForSignals() {
+	signalCh := make(chan os.Signal, 1)
+	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM)
+	select {
+	case <-signalCh:
+		log.Println("Signal received, shutting down...")
+	}
 }
