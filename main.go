@@ -1,5 +1,6 @@
 package main
 
+// If failed to conn. to db, handle error well
 import (
 	"crypto/x509"
 	"expvar"
@@ -9,8 +10,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	//	"log"
 	//	//	"net"
-	//	"net/http"
 	"crypto/rand"
+	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
@@ -33,6 +34,7 @@ const (
 	DefaultDataDir         = "./temp"
 	DefaultTCPAddr         = "localhost:5514"
 	DefaultUDPAddr         = "localhost:514"
+	DefaultMonitorAddr     = "localhost:8080"
 )
 
 var (
@@ -70,6 +72,7 @@ func main() {
 		datadir         = fs.String("datadir", DefaultDataDir, "Set data directory")
 		udpAddr         = fs.String("udpaddr", DefaultUDPAddr, "Syslog server UDP bind address in the form host:port")
 		tcpAddr         = fs.String("tcpaddr", DefaultTCPAddr, "Syslog server TCP bind address in the form host:port")
+		monAddr         = fs.String("monaddr", DefaultMonitorAddr, "Monitor bind address in the form host:port")
 		caPemPath       = fs.String("tlspem", "", "path to CA PEM file for TLS-enabled TCP server. If not set, TLS not activated")
 		caKeyPath       = fs.String("tlskey", "", "path to CA key file for TLS-enabled TCP server. If not set, TLS not activated")
 		isDebug         = fs.Bool("debug", false, "Is debug mode?")
@@ -118,20 +121,20 @@ func main() {
 	log.Info("TCP collector is started")
 	//	log.Printf("UDP collector listening to %s", *udpIface)
 
-	//	// Start monitoring
-	//	startStatusMonitoring(monitorIface)
+	// Start monitoring
+	startStatusMonitoring(monAddr)
 
 	// Stop
 	waitForSignals()
 }
 
-//func startStatusMonitoring(monitorIface *string) error {
-//	http.HandleFunc("/e", func(w http.ResponseWriter, r *http.Request) {
-//	})
+func startStatusMonitoring(monitorIface *string) error {
+	http.HandleFunc("/e", func(w http.ResponseWriter, r *http.Request) {
+	})
 
-//	go http.ListenAndServe(*monitorIface, nil)
-//	return nil
-//}
+	go http.ListenAndServe(*monitorIface, nil)
+	return nil
+}
 
 func logDrain(msg string, errChan <-chan error) {
 	for {
@@ -145,13 +148,13 @@ func logDrain(msg string, errChan <-chan error) {
 }
 
 func startTCPCollector(addr string, tls *tls.Config, batcher *engine.Batcher) error {
-	//	collector, err := input.NewCollector("tcp", iface, format, tls)
-	//	if err != nil {
-	//		return fmt.Errorf(("failed to create TCP collector: %s"), err.Error())
-	//	}
-	//	if err := collector.Start(batcher.C()); err != nil {
-	//		return fmt.Errorf("failed to start TCP collector: %s", err.Error())
-	//	}
+	collector, err := collectors.NewCollector("tcp", addr, tls)
+	if err != nil {
+		return fmt.Errorf(("failed to create TCP collector: %s"), err.Error())
+	}
+	if err := collector.Start(batcher.C()); err != nil {
+		return fmt.Errorf("failed to start TCP collector: %s", err.Error())
+	}
 
 	return nil
 }

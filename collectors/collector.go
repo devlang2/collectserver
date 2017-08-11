@@ -5,8 +5,14 @@ import (
 	"errors"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/devlang2/collectserver/event"
+)
+
+const (
+	newlineTimeout = time.Duration(1000 * time.Millisecond)
+	msgBufSize     = 256
 )
 
 type Collector interface {
@@ -16,13 +22,16 @@ type Collector interface {
 
 func NewCollector(proto, addr string, tlsConfig *tls.Config) (Collector, error) {
 	if strings.ToLower(proto) == "tcp" {
-
+		return &TCPCollector{
+			addrStr:   addr,
+			tlsConfig: tlsConfig,
+		}, nil
 	} else if strings.ToLower(proto) == "udp" {
-		addr, err := net.ResolveUDPAddr("udp", addr)
+		udpAddr, err := net.ResolveUDPAddr("udp", addr)
 		if err != nil {
 			return nil, err
 		}
-		return &UDPCollector{addr: addr}, nil
+		return &UDPCollector{addr: udpAddr}, nil
 	}
 	return nil, errors.New("Unsupport collector protocol")
 }

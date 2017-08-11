@@ -1,6 +1,7 @@
 package collectors
 
 import (
+	//	"expvar"
 	"net"
 
 	log "github.com/sirupsen/logrus"
@@ -10,9 +11,7 @@ import (
 	"github.com/nanobox-io/golang-syslogparser/rfc5424"
 )
 
-const (
-	msgBufSize = 256
-)
+//var stats = expvar.NewMap("udp")
 
 type UDPCollector struct {
 	format string
