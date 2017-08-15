@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/devlang2/collectserver/event"
+	"github.com/devlang2/tcpserver/event"
 )
 
 const (
@@ -26,12 +26,6 @@ func NewCollector(proto, addr string, tlsConfig *tls.Config) (Collector, error) 
 			addrStr:   addr,
 			tlsConfig: tlsConfig,
 		}, nil
-	} else if strings.ToLower(proto) == "udp" {
-		udpAddr, err := net.ResolveUDPAddr("udp", addr)
-		if err != nil {
-			return nil, err
-		}
-		return &UDPCollector{addr: udpAddr}, nil
 	}
 	return nil, errors.New("Unsupport collector protocol")
 }

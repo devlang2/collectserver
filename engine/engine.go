@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/devlang2/collectserver/event"
 	"github.com/devlang2/golibs/network"
+	"github.com/devlang2/tcpserver/event"
 	_ "github.com/go-sql-driver/mysql"
 	log "github.com/sirupsen/logrus"
 )
@@ -32,7 +32,7 @@ type Batcher struct {
 }
 
 func init() {
-	//	initDatabase("root:sniper123!@#@tcp(127.0.0.1:3306)/awserver?charset=utf8&allowAllFiles=true")
+	initDatabase("sniper:sniper123!@#@tcp(aptxa:3306)/awserver?charset=utf8&allowAllFiles=true")
 }
 
 func NewBatcher(duration time.Duration, size, maxpending int, datadir string) *Batcher {
@@ -65,7 +65,7 @@ func (this *Batcher) Start(errChan chan<- error) error {
 				return
 			}
 
-			result, err := db.Exec(fmt.Sprintf("LOAD DATA LOCAL INFILE %q INTO TABLE syslog", file.Name()))
+			result, err := db.Exec(fmt.Sprintf("LOAD DATA LOCAL INFILE %q INTO TABLE log_agent(Time,Guid,IP,Mac,ComputerName,OsVersionNumber,OsIsServer,OsBit,FullPolicyVersion,TodayPolicyVersion,Sequence,SrcIP,SrcPort)", file.Name()))
 			if err != nil {
 				errChan <- err
 				return
@@ -82,7 +82,7 @@ func (this *Batcher) Start(errChan chan<- error) error {
 			}
 
 			// Load data
-			stats.Add("eventsCollected", int64(len(queue)))
+			stats.Add("eventsInserted", int64(len(queue)))
 			queue = make([]*event.Event, 0, this.size)
 		}
 
@@ -100,7 +100,6 @@ func (this *Batcher) Start(errChan chan<- error) error {
 				}
 
 			case <-timer.C:
-				log.Println("timeout")
 				save()
 			}
 		}
@@ -115,29 +114,27 @@ func (b *Batcher) C() chan<- *event.Event {
 
 func saveAsFile(datadir string, queue []*event.Event) (*os.File, error) {
 	// Write the data in the queue to a file
-	tmpfile, err := ioutil.TempFile(datadir, "syslog_"+time.Now().Format("20060102_150405_"))
+	tmpfile, err := ioutil.TempFile(datadir, "log_"+time.Now().Format("20060102_150405_"))
 	defer tmpfile.Close()
 	if err != nil {
 		return tmpfile, err
 	}
 	var str string
 	for _, r := range queue {
-		str += fmt.Sprintf("%s\t%s\t%d\t%d\t%s\t%s\t%d\t%d\t%s\t%d\t%d\t%s\t%s\t%s\t%s\n",
-			r.Data["timestamp"].(time.Time).Format(YYYYMMDDHH24MISS), // timestamp
-			r.Rdate.Format(YYYYMMDDHH24MISS),                         // rdate
-			network.IpToInt32(r.Addr.IP),                             // src_ip
-			r.Addr.Port,                                              // port
-			r.Data["hostname"].(string),                              // hostname
-			r.Data["proc_id"].(string),                               // proc_id
-			r.Data["facility"].(int),                                 // facility
-			r.Data["severity"].(int),                                 // severity
-			r.Data["app_name"].(string),                              // app_name
-			r.Data["priority"].(int),                                 // priority
-			r.Data["version"].(int),                                  // version
-			r.Data["msg_id"].(string),                                // msg_id
-			r.Data["message"].(string),                               // message
-			r.Data["structured_data"].(string),                       // structured_data
-			r.Origin, // origin
+		str += fmt.Sprintf("%s\t%s\t%d\t%s\t%s\t%4.1f\t%d\t%d\t%s\t%s\t%d\t%d\t%s\n",
+			r.Time.Format(YYYYMMDDHH24MISS),
+			r.Guid.String(),
+			network.IpToInt32(r.IP),
+			r.Mac,                      //                Mac
+			r.ComputerName,             //                ComputerName
+			r.OsVersionNumber,          //                OsVersionNumber
+			r.OsIsServer,               //                OsIsServer
+			r.OsBit,                    //                OsBit
+			r.FullPolicyVersion,        //                FullPolicyVersion
+			r.TodayPolicyVersion,       //                TodayPolicyVersion
+			r.Sequence,                 //                Sequence
+			network.IpToInt32(r.SrcIP), //                SrcIP
+			r.SrcPort,                  //                SrcPort
 		)
 	}
 

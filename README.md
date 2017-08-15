@@ -1,2 +1,2 @@
-# collectserver
-go, tcp server, udp server
+# tcpserver
+go, tcp server

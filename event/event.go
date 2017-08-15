@@ -4,16 +4,21 @@ import (
 	"net"
 	"time"
 
-	"github.com/nanobox-io/golang-syslogparser"
+	"github.com/google/uuid"
 )
 
 type Event struct {
-	Data   syslogparser.LogParts
-	Origin string
-	Rdate  time.Time
-	Addr   *net.UDPAddr
-}
-
-func NewEvent() *Event {
-	return &Event{Rdate: time.Now()}
+	Time               time.Time
+	Guid               uuid.UUID // AD2BDBE0-BB14-4CBA-A1A4-F9CFD096774F
+	IP                 net.IP    // IP
+	Mac                string    // MAC
+	ComputerName       string    // WSAHN-PC
+	OsVersionNumber    float32   // 10.0
+	OsIsServer         int       // 0
+	OsBit              int       // 64
+	FullPolicyVersion  string    // 1026
+	TodayPolicyVersion string    // 1028
+	Sequence           int64
+	SrcIP              net.IP
+	SrcPort            string
 }

@@ -21,8 +21,8 @@ import (
 	"crypto/tls"
 	"io/ioutil"
 
-	"github.com/devlang2/collectserver/collectors"
-	"github.com/devlang2/collectserver/engine"
+	"github.com/devlang2/tcpserver/collectors"
+	"github.com/devlang2/tcpserver/engine"
 	//	//	"github.com/iwondory/udpserver/event"
 	//	"github.com/davecgh/go-spew/spew"
 )
@@ -33,7 +33,6 @@ const (
 	DefaultBatchMaxPending = 3
 	DefaultDataDir         = "./temp"
 	DefaultTCPAddr         = "localhost:8808"
-	DefaultUDPAddr         = "localhost:514"
 	DefaultMonitorAddr     = "localhost:8080"
 )
 
@@ -70,7 +69,6 @@ func main() {
 		batchDuration   = fs.Int("duration", DefaultBatchDuration, "Batch timeout, in milliseconds")
 		batchMaxPending = fs.Int("maxpending", DefaultBatchMaxPending, "Maximum pending events")
 		datadir         = fs.String("datadir", DefaultDataDir, "Set data directory")
-		udpAddr         = fs.String("udpaddr", DefaultUDPAddr, "Syslog server UDP bind address in the form host:port")
 		tcpAddr         = fs.String("tcpaddr", DefaultTCPAddr, "Syslog server TCP bind address in the form host:port")
 		monAddr         = fs.String("monaddr", DefaultMonitorAddr, "Monitor bind address in the form host:port")
 		caPemPath       = fs.String("tlspem", "", "path to CA PEM file for TLS-enabled TCP server. If not set, TLS not activated")
@@ -97,12 +95,6 @@ func main() {
 
 	// Start log drain
 	go logDrain("error", errChan)
-
-	// Start UDP collector
-	if err := startUDPCollector(*udpAddr, batcher); err != nil {
-		log.Fatalf("Failed to start UDP collector: %s", err.Error())
-	}
-	log.Info("UDP collector is started")
 
 	// Start TCP collector
 	var tlsConfig *tls.Config
@@ -223,3 +215,26 @@ func waitForSignals() {
 		log.Println("Signal received, shutting down...")
 	}
 }
+
+//drop table log_agent;
+//create table log_agent (
+
+//	Time               datetime not null,
+//	Guid               char(36) not null,
+//	IP                 int unsigned not null,
+//	Mac                char(17) not null,
+//	ComputerName       varchar(64) not null,
+//	OsVersionNumber    float(5,1),
+//	OsIsServer         tinyint unsigned not null,
+//	OsBit              tinyint unsigned not null,
+//	FullPolicyVersion  int unsigned not null,
+//	TodayPolicyVersion int unsigned not null,
+//	Sequence           int unsigned not null,
+
+//	SrcIP int unsigned not null,
+//	SrcPort smallint unsigned not null,
+//	RegDate datetime not null  DEFAULT CURRENT_TIMESTAMP,
+
+//	key ix_time(time)
+
+//)
