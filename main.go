@@ -32,7 +32,7 @@ const (
 	DefaultBatchDuration   = 3000 // ms
 	DefaultBatchMaxPending = 3
 	DefaultDataDir         = "./temp"
-	DefaultTCPAddr         = "localhost:5514"
+	DefaultTCPAddr         = "localhost:8808"
 	DefaultUDPAddr         = "localhost:514"
 	DefaultMonitorAddr     = "localhost:8080"
 )

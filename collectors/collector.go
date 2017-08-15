@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	newlineTimeout = time.Duration(1000 * time.Millisecond)
-	msgBufSize     = 256
+	tcpTimeout = time.Duration(1000 * time.Millisecond)
+	msgBufSize = 512
 )
 
 type Collector interface {
