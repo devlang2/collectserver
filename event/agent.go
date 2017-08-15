@@ -4,6 +4,7 @@ import (
 	"net"
 	"time"
 
+	//	"github.com/davecgh/go-spew/spew"
 	"github.com/google/uuid"
 )
 
@@ -19,6 +20,22 @@ type Agent struct {
 	FullPolicyVersion  string    // 1026
 	TodayPolicyVersion string    // 1028
 }
+
+//func (this *AgentData) Decode() (*Agent, error) {
+//    var agents []*Agent
+//     dec := gob.NewDecoder(conn)
+//    p := &P{}
+//    dec.Decode(p)
+//    fmt.Printf("Received : %+v", p);
+////    deco := gob.NewDecoder(&network)
+//	//	spew.Dump(this.buffer)
+//    //var q Q
+//	//err = dec.Decode(&q)
+//	//if err != nil {
+//	//    log.Fatal("decode error:", err)
+//	//}
+//	return nil, nil
+//}
 
 //func NewAgent() *Agent {
 //	return &Agent{Rdate: time.Now()}
