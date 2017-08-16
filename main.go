@@ -28,9 +28,10 @@ import (
 )
 
 const (
-	DefaultBatchSize       = 4
-	DefaultBatchDuration   = 3000 // ms
-	DefaultBatchMaxPending = 3
+	DefaultBatchSize       = 1000
+	DefaultBatchDuration   = 5000 // ms
+	DefaultBatchMaxPending = 1000
+	DefaultCPUCount        = 2
 	DefaultDataDir         = "./temp"
 	DefaultTCPAddr         = "localhost:8808"
 	DefaultMonitorAddr     = "localhost:8080"
@@ -42,9 +43,6 @@ var (
 )
 
 func init() {
-
-	// Set CPU
-	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	// Set logger
 	log.SetFormatter(&log.TextFormatter{
@@ -66,6 +64,7 @@ func main() {
 	fs = flag.NewFlagSet("", flag.ExitOnError)
 	var (
 		batchSize       = fs.Int("batchsize", DefaultBatchSize, "Batch size")
+		cpuCount        = fs.Int("cpu", DefaultCPUCount, "CPU count")
 		batchDuration   = fs.Int("duration", DefaultBatchDuration, "Batch timeout, in milliseconds")
 		batchMaxPending = fs.Int("maxpending", DefaultBatchMaxPending, "Maximum pending events")
 		datadir         = fs.String("datadir", DefaultDataDir, "Set data directory")
@@ -77,6 +76,13 @@ func main() {
 	)
 	fs.Usage = printHelp
 	fs.Parse(os.Args[1:])
+
+	if *cpuCount > runtime.NumCPU() {
+		*cpuCount = runtime.NumCPU()
+	}
+	runtime.GOMAXPROCS(*cpuCount)
+
+	log.Infof("CPU: %d/%d, Batch size: %d, Batch timeout: %d(ms), Batch max pending: %d", *cpuCount, runtime.NumCPU(), *batchSize, *batchDuration, *batchMaxPending)
 	if *isDebug {
 		log.SetLevel(log.DebugLevel)
 		log.Info("Starting server..[Debug mode]")
