@@ -33,8 +33,8 @@ const (
 	DefaultBatchMaxPending = 1000
 	DefaultCPUCount        = 2
 	DefaultDataDir         = "./temp"
-	DefaultTCPAddr         = "localhost:8808"
-	DefaultMonitorAddr     = "localhost:8080"
+	DefaultTCPAddr         = ":8808"
+	DefaultMonitorAddr     = ":8080"
 )
 
 var (
