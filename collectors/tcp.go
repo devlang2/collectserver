@@ -47,8 +47,9 @@ func (this *TCPCollector) Addr() net.Addr {
 	return this.addr
 }
 
-func (s *TCPCollector) handleConnection(conn net.Conn, c chan<- *event.Event) {
+func (this *TCPCollector) handleConnection(conn net.Conn, c chan<- *event.Event) {
 	stats.Add("tcpConnections", 1)
+	log.Info("Connected from ", conn.RemoteAddr().String())
 	defer func() {
 		stats.Add("tcpConnections", -1)
 		conn.Close()
