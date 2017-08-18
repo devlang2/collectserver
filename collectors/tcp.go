@@ -6,6 +6,7 @@ import (
 	"expvar"
 	"net"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/devlang2/tcpserver/event"
 	log "github.com/sirupsen/logrus"
 )
@@ -61,9 +62,12 @@ func (this *TCPCollector) handleConnection(conn net.Conn, c chan<- *event.Event)
 		decoder := gob.NewDecoder(conn)
 		events := make([]event.Event, 0, 3)
 		err := decoder.Decode(&events)
+
 		if err != nil {
+			spew.Dump(&events)
 			stats.Add("tcpDecodeError", 1)
 			log.Error(err.Error())
+			log.Panic(err)
 			return
 		}
 		for i, _ := range events {

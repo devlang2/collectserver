@@ -70,6 +70,7 @@ func (this *Batcher) Start(errChan chan<- error) error {
 				errChan <- err
 				return
 			}
+			//			time.Sleep(1 * time.Second)
 
 			affectedRows, _ := result.RowsAffected()
 			if int64(len(queue)) == affectedRows {
