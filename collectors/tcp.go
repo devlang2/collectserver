@@ -67,7 +67,8 @@ func (this *TCPCollector) handleConnection(conn net.Conn, c chan<- *event.Event)
 			spew.Dump(&events)
 			stats.Add("tcpDecodeError", 1)
 			log.Error(err.Error())
-			return
+			continue
+
 		}
 		for i, _ := range events {
 			events[i].SrcIP = ip
