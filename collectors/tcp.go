@@ -67,7 +67,7 @@ func (this *TCPCollector) handleConnection(conn net.Conn, c chan<- *event.Event)
 			spew.Dump(&events)
 			stats.Add("tcpDecodeError", 1)
 			log.Error(err.Error())
-			log.Panic(err)
+			panic(err)
 			return
 		}
 		for i, _ := range events {
