@@ -4,9 +4,9 @@ import (
 	"crypto/tls"
 	"encoding/gob"
 	"expvar"
+	"io"
 	"net"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/devlang2/tcpserver/event"
 	log "github.com/sirupsen/logrus"
 )
@@ -64,9 +64,11 @@ func (this *TCPCollector) handleConnection(conn net.Conn, c chan<- *event.Event)
 		err := decoder.Decode(&events)
 
 		if err != nil {
-			spew.Dump(&events)
 			stats.Add("tcpDecodeError", 1)
 			log.Error(err.Error())
+			if err == io.EOF {
+				return
+			}
 			continue
 
 		}
