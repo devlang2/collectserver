@@ -70,7 +70,6 @@ func (this *TCPCollector) handleConnection(conn net.Conn, c chan<- *event.Event)
 				return
 			}
 			continue
-
 		}
 		for i, _ := range events {
 			events[i].SrcIP = ip
