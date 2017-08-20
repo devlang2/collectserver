@@ -19,6 +19,11 @@ type TCPCollector struct {
 	tlsConfig *tls.Config
 }
 
+type Result struct {
+	Code    int
+	Message string
+}
+
 func (this *TCPCollector) Start(c chan<- *event.Event) error {
 	var ln net.Listener
 	var err error
@@ -65,11 +70,11 @@ func (this *TCPCollector) handleConnection(conn net.Conn, c chan<- *event.Event)
 
 		if err != nil {
 			stats.Add("tcpDecodeError", 1)
-			log.Error(err.Error())
-			if err == io.EOF {
-				return
+			if err != io.EOF {
+				log.Error(err.Error())
 			}
-			continue
+
+			return
 		}
 		for i, _ := range events {
 			events[i].SrcIP = ip
