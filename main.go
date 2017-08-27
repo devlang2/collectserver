@@ -21,8 +21,8 @@ import (
 	"crypto/tls"
 	"io/ioutil"
 
-	"github.com/devlang2/tcpserver/collectors"
-	"github.com/devlang2/tcpserver/engine"
+	"github.com/devplayg/tcpserver/collectors"
+	"github.com/devplayg/tcpserver/engine"
 	//	//	"github.com/iwondory/udpserver/event"
 	//	"github.com/davecgh/go-spew/spew"
 )

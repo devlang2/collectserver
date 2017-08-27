@@ -7,7 +7,7 @@ import (
 	"io"
 	"net"
 
-	"github.com/devlang2/tcpserver/event"
+	"github.com/devplayg/tcpserver/event"
 	log "github.com/sirupsen/logrus"
 )
 

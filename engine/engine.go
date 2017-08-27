@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/devlang2/golibs/network"
-	"github.com/devlang2/tcpserver/event"
+	"github.com/devplayg/golibs/network"
+	"github.com/devplayg/tcpserver/event"
 	_ "github.com/go-sql-driver/mysql"
 	log "github.com/sirupsen/logrus"
 )
@@ -32,7 +32,7 @@ type Batcher struct {
 }
 
 func init() {
-	initDatabase("root:sniper123!@#@tcp(aptxa:3306)/awserver?charset=utf8&allowAllFiles=true")
+	initDatabase("devplayg:devplayg123!@#@tcp(127.0.0.1:3306)/awserver?charset=utf8&allowAllFiles=true")
 }
 
 func NewBatcher(duration time.Duration, size, maxpending int, datadir string) *Batcher {

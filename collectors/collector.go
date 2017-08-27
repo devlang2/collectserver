@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/devlang2/tcpserver/event"
+	"github.com/devplayg/tcpserver/event"
 )
 
 const (
